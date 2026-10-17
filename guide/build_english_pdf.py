@@ -98,15 +98,17 @@ STYLES = {
 CAPTIONS = {
     "m10-live-story-2x2.jpg": "01  /  A real M10: dashboard, recording, waiting, and reply",
     "muse-sdk-token-steps-aligned.png": "02  /  Find or generate an SDK token",
-    "muse-app-pairing-en-2x2.png": "03  /  Pairing flow in the Muse app; one panel is illustrated",
-    "dashboard-overview.png": "04  /  Four Dashboard pages",
-    "work-overview.png": "05  /  Work Mode screen states, shown with preview data",
-    "m10-muse-plant-guardian-concept.png": "06  /  A possible plant-care extension, shown as concept art",
+    "sdk-token-terminal-handoff.png": "03  /  Paste the token into the M10 terminal shown on your computer (illustration)",
+    "muse-app-pairing-en-2x2.png": "04  /  Pairing flow in the Muse app; one panel is illustrated",
+    "dashboard-overview.png": "05  /  Four Dashboard pages",
+    "work-overview.png": "06  /  Work Mode screen states, shown with preview data",
+    "m10-muse-plant-guardian-concept.png": "07  /  A possible plant-care extension, shown as concept art",
 }
 
 MAX_IMAGE_HEIGHT = {
     "m10-live-story-2x2.jpg": 310,
     "muse-sdk-token-steps-aligned.png": 400,
+    "sdk-token-terminal-handoff.png": 210,
     "muse-app-pairing-en-2x2.png": 455,
     "dashboard-overview.png": 382,
     "work-overview.png": 382,
@@ -209,6 +211,9 @@ def build():
                 if markup.startswith("Four moments from the working build:"):
                     # The preceding figure already has a print caption;
                     # the click-to-zoom instruction only applies to HTML.
+                    continue
+                if markup.startswith("<i>Illustration: the terminal"):
+                    # The preceding figure already supplies the print caption.
                     continue
                 if markup.startswith("References:"):
                     story.append(HRFlowable(width="100%", thickness=0.7, color=RULE, spaceBefore=10, spaceAfter=5))
