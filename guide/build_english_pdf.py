@@ -106,7 +106,7 @@ CAPTIONS = {
 }
 
 MAX_IMAGE_HEIGHT = {
-    "m10-live-story-2x2.jpg": 310,
+    "m10-live-story-2x2.jpg": 330,
     "muse-sdk-token-steps-aligned.png": 400,
     "sdk-token-terminal-handoff.png": 390,
     "muse-app-pairing-en-2x2.png": 455,
