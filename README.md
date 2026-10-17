@@ -4,6 +4,8 @@ An experimental UNIHIKER M10 project that pairs a Debian 12 board with Muse's Li
 
 Start with the illustrated [English guide](guide/English%20Tutorial.md) or its [PDF](guide/output/pdf/UNIHIKER-M10-Muse-Guide.pdf). The guide covers pairing and shows the expected interaction. This repository preserves the source used for the demonstrated interface; it is **not yet a one-command installer for a fresh M10**.
 
+Tutorial author: **Chuan Lei**.
+
 ![Four photos of the M10 dashboard and work mode](guide/images/m10-live-story-2x2.jpg)
 
 ## What is here

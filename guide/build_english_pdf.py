@@ -72,6 +72,10 @@ STYLES = {
         textColor=INK, spaceAfter=11,
         allowWidows=0, allowOrphans=0,
     ),
+    "byline": ParagraphStyle(
+        "Byline", fontName="Segoe-Bold", fontSize=10.5, leading=15,
+        textColor=MID_GREEN, spaceAfter=12,
+    ),
     "section": ParagraphStyle(
         "Section", fontName="Segoe-Bold", fontSize=17.2, leading=22,
         textColor=GREEN, spaceBefore=21, spaceAfter=11,
@@ -101,7 +105,7 @@ CAPTIONS = {
 }
 
 MAX_IMAGE_HEIGHT = {
-    "m10-live-story-2x2.jpg": 352,
+    "m10-live-story-2x2.jpg": 310,
     "muse-sdk-token-steps-aligned.png": 400,
     "muse-app-pairing-en-2x2.png": 455,
     "dashboard-overview.png": 382,
@@ -176,7 +180,7 @@ def build():
         str(OUTPUT), pagesize=A4, leftMargin=MARGIN_X, rightMargin=MARGIN_X,
         topMargin=TOP, bottomMargin=BOTTOM,
         title="Make Your UNIHIKER M10 Talk to Muse",
-        author="UNIHIKER M10 + Muse project",
+        author="Chuan Lei",
         subject="Hands-on guide to pairing a UNIHIKER M10 with Muse",
         pageCompression=1,
     )
@@ -187,11 +191,14 @@ def build():
             continue
         if element.name == "h1":
             story.append(Paragraph(paragraph_markup(element), STYLES["title"]))
-            story.append(HRFlowable(width="100%", thickness=1.4, color=MID_GREEN, spaceAfter=16))
         elif element.name == "h2":
             story.append(CondPageBreak(90))
             story.append(Paragraph(paragraph_markup(element), STYLES["section"]))
         elif element.name == "p":
+            if "byline" in element.get("class", []):
+                story.append(Paragraph(paragraph_markup(element), STYLES["byline"]))
+                story.append(HRFlowable(width="100%", thickness=1.4, color=MID_GREEN, spaceAfter=16))
+                continue
             img = element.find("img")
             if img:
                 story.append(KeepTogether(figure(img["src"])))

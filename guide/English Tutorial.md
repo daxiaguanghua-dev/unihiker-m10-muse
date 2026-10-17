@@ -1,5 +1,7 @@
 # Make Your UNIHIKER M10 Talk to Muse: Live Data, Voice Notes, and On-Screen Replies
 
+*By Chuan Lei*
+
 Cover the M10's light sensor with your finger and watch the number on its screen change. Then ask Muse on your phone, “How is my M10 doing?” Muse can call a tool on the board and report live figures such as available memory, free disk space, and chip temperature. With the setup in this guide, the board can collect data, Muse can respond to it, and Muse's reply can appear back on the M10 screen.
 
 You can build this interaction with just one M10. First, pair it using Muse's official Linux SDK. Then add a dashboard and a work mode: flip through live status pages, tap the screen to record a voice note, and read Muse's reply on the board. The screen, buttons, light sensor, and microphone are already built in; no extra sensors are needed for the main project.
