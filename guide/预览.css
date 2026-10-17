@@ -11,7 +11,7 @@ a { color: #1d6c4e; text-underline-offset: 3px; }
 strong { color: #173c2d; }
 code { background: #edf2ed; color: #20543e; padding: 2px 5px; border-radius: 4px; font-size: .9em; }
 img { display: block; max-width: min(100%, 620px); height: auto; margin: 24px auto 10px; border-radius: 12px; box-shadow: 0 10px 30px #1a362217; }
-img[src*="m10-live-story"] { max-width: min(100%, 430px); }
+img[src*="m10-live-story"] { max-width: min(100%, 510px); }
 img[src*="muse-sdk-token-steps"] { max-width: min(100%, 500px); }
 img[src*="sdk-token-terminal-handoff"] { max-width: min(100%, 480px); }
 img[src*="muse-app-pairing"] { max-width: min(100%, 480px); }
