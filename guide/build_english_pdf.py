@@ -108,7 +108,7 @@ CAPTIONS = {
 MAX_IMAGE_HEIGHT = {
     "m10-live-story-2x2.jpg": 310,
     "muse-sdk-token-steps-aligned.png": 400,
-    "sdk-token-terminal-handoff.png": 210,
+    "sdk-token-terminal-handoff.png": 390,
     "muse-app-pairing-en-2x2.png": 455,
     "dashboard-overview.png": 382,
     "work-overview.png": 382,
@@ -211,9 +211,6 @@ def build():
                 if markup.startswith("Four moments from the working build:"):
                     # The preceding figure already has a print caption;
                     # the click-to-zoom instruction only applies to HTML.
-                    continue
-                if markup.startswith("<i>Illustration: the terminal"):
-                    # The preceding figure already supplies the print caption.
                     continue
                 if markup.startswith("References:"):
                     story.append(HRFlowable(width="100%", thickness=0.7, color=RULE, spaceBefore=10, spaceAfter=5))

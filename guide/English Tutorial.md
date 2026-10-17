@@ -8,7 +8,7 @@ You can build this interaction with just one M10. First, pair it using Muse's of
 
 [![Four real photos of the M10 showing the dashboard, recording, waiting for a reply, and a reply on screen](images/m10-live-story-2x2.jpg)](images/m10-live-story-2x2.jpg)
 
-Four moments from the working build: dashboard, recording, waiting, and Muse's reply on the M10. Click the image to see the screen details.
+Four moments from the working build: dashboard, recording, waiting, and Muse's reply on the M10.
 
 Muse already has [instructions for connecting a Raspberry Pi or another Linux device](https://github.com/facebookincubator/muse-gadget-sdk/blob/main/linux/README.md). The M10 puts a touchscreen, buttons, a microphone, and sensors together in one handheld board. Once connected, you can check its status and read replies on the board itself. The interface shown here is a separate program written for the M10; installing the SDK alone will not add these screens.
 
@@ -23,8 +23,6 @@ The account in the illustration already has a token, so **Generate token** is di
 Connect the M10 to your computer with the USB data cable. Confirm that you're working on the intended board and that it has internet access and working Bluetooth. Follow the [official Linux SDK installation guide](https://github.com/facebookincubator/muse-gadget-sdk/blob/main/linux/README.md) using a board account with `sudo`. At the installation step, run `bash install.sh` **in the M10's terminal**. When it asks for `Muse SDK token (mgst_...; input hidden)`, paste your token and press Enter. The characters will not appear. The installer saves it in a root-only file on the board, then opens pairing. You do not enter the token in the phone app; keep it out of AI chats, screenshots, and public repositories.
 
 [![Illustration showing an SDK token copied from Muse Gadgets into the hidden prompt of an M10 terminal opened on the computer](images/sdk-token-terminal-handoff.png)](images/sdk-token-terminal-handoff.png)
-
-*Illustration: the terminal is on your computer but connected to the M10. No real token is shown.*
 
 After installation, the board opens a pairing window. In the Muse app, go to **Settings → Devices**, enable **Developer mode**, tap **Add Device**, and select the device whose name begins with `MuseGadget`. Check the name and read the permissions notice before continuing. The suffix is different for each board, so yours will not necessarily match the picture.
 

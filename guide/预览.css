@@ -11,6 +11,12 @@ a { color: #1d6c4e; text-underline-offset: 3px; }
 strong { color: #173c2d; }
 code { background: #edf2ed; color: #20543e; padding: 2px 5px; border-radius: 4px; font-size: .9em; }
 img { display: block; max-width: min(100%, 620px); height: auto; margin: 24px auto 10px; border-radius: 12px; box-shadow: 0 10px 30px #1a362217; }
-img[src*="00-live"] { max-width: 240px; }
+img[src*="m10-live-story"] { max-width: min(100%, 430px); }
+img[src*="muse-sdk-token-steps"] { max-width: min(100%, 500px); }
+img[src*="sdk-token-terminal-handoff"] { max-width: min(100%, 480px); }
+img[src*="muse-app-pairing"] { max-width: min(100%, 480px); }
+figure { margin: 24px 0; text-align: center; }
+figure img { width: 100%; max-width: 540px; }
+figcaption { color: #66786e; font-size: 14px; line-height: 1.5; }
 p:has(> img) { margin-bottom: 22px; }
 @media (max-width: 600px) { body { padding: 28px 18px 70px; font-size: 16px; } h2 { font-size: 23px; margin-top: 38px; } }
