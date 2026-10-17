@@ -174,10 +174,12 @@ SDK documentation</a>, along with this prompt:</p>
 <blockquote>
 <p>I have a UNIHIKER M10 running Debian 12. First confirm that you’re
 connected to this board. Check its network, Bluetooth, existing files,
-and services. Back up what is already there, then install and pair the
-official Linux SDK according to its documentation. Let me enter the SDK
-token privately in the board’s terminal. Verify the connection with a
-real <code>device.health</code> call from the Muse app before deploying
+and services. Back up what is already there, then prepare the official
+Linux SDK installer. Run <code>bash install.sh</code> without putting my
+SDK token in the command. Pause at its hidden token prompt and let me
+paste the token directly into the M10 terminal; I will press Enter. Then
+continue pairing and verify the connection with a real
+<code>device.health</code> call from the Muse app before deploying
 the Dashboard and Work Mode from this guide’s interface source. At each
 step, tell me what I should see in the app or on the board. Show N/A for
 unavailable sensors, and tell me plainly if code or permissions are
