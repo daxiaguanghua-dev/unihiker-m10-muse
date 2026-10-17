@@ -1,0 +1,16 @@
+[Unit]
+Description=UNIHIKER M10 button and voice agent for Muse
+After=muse-m10-hardware.service musegadget.service
+Wants=muse-m10-hardware.service musegadget.service
+
+[Service]
+User=muse
+Group=muse
+WorkingDirectory=/home/muse
+Environment=HOME=/home/muse
+ExecStart=/usr/bin/python3 /home/muse/m10_agent.py
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

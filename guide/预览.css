@@ -1,0 +1,15 @@
+:root { color-scheme: light; }
+* { box-sizing: border-box; }
+body { margin: 0 auto; padding: 44px 24px 100px; max-width: 760px; background: #fafaf7; color: #26312b; font: 17px/1.82 -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans CJK SC", sans-serif; }
+h1 { color: #183f31; font-size: clamp(30px, 5vw, 45px); line-height: 1.25; letter-spacing: -.025em; margin: 0 0 24px; }
+h2 { color: #1e4d3a; font-size: 25px; line-height: 1.4; margin: 48px 0 18px; padding-top: 22px; border-top: 1px solid #cdd9d0; }
+p { margin: 0 0 20px; }
+blockquote { margin: 25px 0; padding: 18px 22px; border-left: 4px solid #2b7756; background: #edf3ec; border-radius: 0 12px 12px 0; }
+blockquote p:last-child { margin-bottom: 0; }
+a { color: #1d6c4e; text-underline-offset: 3px; }
+strong { color: #173c2d; }
+code { background: #edf2ed; color: #20543e; padding: 2px 5px; border-radius: 4px; font-size: .9em; }
+img { display: block; max-width: min(100%, 620px); height: auto; margin: 24px auto 10px; border-radius: 12px; box-shadow: 0 10px 30px #1a362217; }
+img[src*="00-live"] { max-width: 240px; }
+p:has(> img) { margin-bottom: 22px; }
+@media (max-width: 600px) { body { padding: 28px 18px 70px; font-size: 16px; } h2 { font-size: 23px; margin-top: 38px; } }

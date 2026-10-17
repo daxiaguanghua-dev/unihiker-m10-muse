@@ -1,0 +1,15 @@
+[Unit]
+Description=UNIHIKER M10 hardware access for Muse
+Before=musegadget.service
+After=systemd-modules-load.service
+
+[Service]
+Type=simple
+ExecStartPre=/usr/bin/python3 /usr/local/lib/muse-m10/load_hardware.py
+ExecStart=/usr/bin/python3 /usr/local/lib/muse-m10/hardware_service.py
+Restart=on-failure
+RestartSec=5
+TimeoutStartSec=30
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,15 @@
+[Unit]
+Description=Muse touchscreen for UNIHIKER M10
+After=musegadget.service systemd-user-sessions.service
+
+[Service]
+Type=simple
+Environment=DISPLAY=:0
+Environment=XAUTHORITY=/root/.Xauthority
+ExecStartPre=/bin/sh -c 'i=0; while [ ! -S /tmp/.X11-unix/X0 ]; do i=$((i + 1)); [ "$i" -lt 60 ] || exit 1; sleep 1; done'
+ExecStart=/usr/bin/python3 /root/muse_status.py
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
