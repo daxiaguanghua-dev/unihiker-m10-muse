@@ -79,12 +79,16 @@ instructs; don’t revoke a working token just to make your screen match
 the illustration.</p>
 <p>Connect the M10 to your computer with the USB data cable. Confirm
 that you’re working on the intended board and that it has internet
-access and working Bluetooth. Then follow the <a
+access and working Bluetooth. Follow the <a
 href="https://github.com/facebookincubator/muse-gadget-sdk/blob/main/linux/README.md">official
-Linux SDK installation guide</a>. Installation requires an account on
-the board that can run <code>sudo</code>. The SDK token is a pairing
-credential: enter it privately in the board’s terminal, not in an AI
-chat, screenshot, or public repository.</p>
+Linux SDK installation guide</a> using a board account with
+<code>sudo</code>. At the installation step, run <code>bash install.sh</code>
+<strong>in the M10’s terminal</strong>. When it asks for
+<code>Muse SDK token (mgst_...; input hidden)</code>, paste your token and
+press Enter. The characters will not appear. The installer saves it in a
+root-only file on the board, then opens pairing. You do not enter the token
+in the phone app; keep it out of AI chats, screenshots, and public
+repositories.</p>
 <p>After installation, the board opens a pairing window. In the Muse
 app, go to <strong>Settings → Devices</strong>, enable <strong>Developer
 mode</strong>, tap <strong>Add Device</strong>, and select the device
