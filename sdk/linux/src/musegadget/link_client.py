@@ -265,10 +265,12 @@ class LinkSession:
         }
         if reply_on_display:
             request_body['message'] = (
-                '这条语音来自我的 M10 工作模式。请处理语音内容，并调用发送设备 '
-                + self._device.node_id + ' 的 display.show，将你的实际回复正文同步显示到 M10。'
-                '标题简短，正文完整，设备会自动分页；同时保留手机聊天回复。'
-                '不要只显示已收到或发送成功，不要修改本地界面程序。')
+                'This voice note came from Work Mode on my UNIHIKER M10. '
+                'Please respond to what I said in English by default, unless I explicitly ask for another language. '
+                'Call display.show on the sending device (' + self._device.node_id + ') '
+                'to show your actual reply on the M10. Use a short title and the complete reply text; '
+                'the device will paginate it automatically. Also keep the reply in the Muse phone chat. '
+                'Do not show only an acknowledgement or upload status, and do not modify the local UI program.')
         if session_id:
             request_body["session_id"] = session_id
         return await self._send_chat_request(request_body)

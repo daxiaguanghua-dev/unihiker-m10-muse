@@ -53,6 +53,10 @@ def test_voice_attachment_crosses_the_real_encrypted_session(reply_on_display):
         assert body['output_modality'] == 'text'
         if reply_on_display:
             assert 'display.show' in body['message'] and 'homelink-abcdef' in body['message']
+            assert 'UNIHIKER M10' in body['message']
+            assert 'respond to what I said in English by default' in body['message']
+            assert 'unless I explicitly ask for another language' in body['message']
+            assert not any('\u4e00' <= char <= '\u9fff' for char in body['message'])
         else:
             assert body['message'] == ''
         assert body['items'] == [{'type': 'file', 'mime_type': 'audio/wav',
