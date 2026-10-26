@@ -26,7 +26,8 @@ def load_history(path):
             0 < item['timestamp'] < 4102444800][-MAX_ITEMS:]
 
 
-def append_history(path, kind, title, text, timestamp=None, event_id=None):
+def append_history(path, kind, title, text, timestamp=None, event_id=None,
+                   origin=None):
     if kind not in ('voice', 'reply') or not isinstance(text, str) or not text.strip():
         raise ValueError('invalid history entry')
     destination = Path(path)
@@ -34,6 +35,8 @@ def append_history(path, kind, title, text, timestamp=None, event_id=None):
     stamp = float(timestamp if timestamp is not None else time.time())
     entry = {'id': event_id or uuid.uuid4().hex, 'kind': kind,
              'title': str(title)[:80], 'text': text[:2000], 'timestamp': stamp}
+    if origin == 'legacy_import':
+        entry['origin'] = origin
     with _WRITE_LOCK:
         items = load_history(destination)
         if any(item.get('id') == entry['id'] for item in items):

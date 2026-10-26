@@ -26,6 +26,13 @@ class HistoryTests(unittest.TestCase):
             items = load_history(path)
             self.assertEqual((len(items), items[0]['text'], items[-1]['text']), (50, '5', '54'))
 
+    def test_imported_old_display_has_explicit_origin(self):
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder) / 'history.json'
+            append_history(path, 'reply', 'Old status', 'Saved screen text',
+                           110, 'old-1', origin='legacy_import')
+            self.assertEqual(load_history(path)[0]['origin'], 'legacy_import')
+
 
 if __name__ == '__main__':
     unittest.main()

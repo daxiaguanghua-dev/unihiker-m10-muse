@@ -615,7 +615,8 @@ class MuseScreen:
     def draw_history_card(self,card):
         entry,part,total,lines=card
         self.rect(12,62,216,184,16)
-        label='VOICE' if entry['kind']=='voice' else 'MUSE REPLY'
+        legacy=entry.get('origin')=='legacy_import'
+        label='OLD DISPLAY' if legacy else 'VOICE' if entry['kind']=='voice' else 'MUSE REPLY'
         self.text(27,76,label+' · HISTORY',10,'green')
         stamp=datetime.datetime.fromtimestamp(entry['timestamp']).strftime('%m/%d %H:%M')
         self.text(213,76,stamp,9,'muted',anchor='ne')
@@ -624,8 +625,10 @@ class MuseScreen:
         self.text(27,98,shorten(heading,self.font(18,True).measure,185),18,bold=True)
         for index,line in enumerate(lines):
             self.text(27,125+index*17,line,12,'#48584e')
-        if total > 1:
-            self.text(27,230,'CONTINUES' if part < total else 'END OF REPLY',9,'muted')
+        if total > 1 or legacy:
+            footer=('CONTINUES' if part < total else 'SOURCE UNVERIFIED' if legacy
+                    else 'END OF REPLY')
+            self.text(27,230,footer,9,'muted')
 
     def draw_voice(self,state):
         recording = state == 'recording'

@@ -88,7 +88,7 @@ def saved_reply_stamp():
         return None
 
 
-def save_reply_event(reply):
+def save_reply_event(reply, origin=None):
     title=reply.get('title') or 'Muse reply'
     message=reply.get('text')
     if not isinstance(title,str) or not isinstance(message,str) or not message.strip():
@@ -97,7 +97,7 @@ def save_reply_event(reply):
         timestamp=float(reply.get('updated_at') or REPLY_JSON.stat().st_mtime)
         event_id='reply-'+hashlib.sha256(
             (str(timestamp)+'\0'+title+'\0'+message).encode('utf-8')).hexdigest()
-        append_history(HISTORY_JSON,'reply',title,message,timestamp,event_id)
+        append_history(HISTORY_JSON,'reply',title,message,timestamp,event_id,origin)
     except (OSError,ValueError,TypeError) as exc:
         log('could not save Muse reply history: '+str(exc))
     return True
@@ -237,7 +237,7 @@ def main():
         select_action('work' if mode=='work' else 'dashboard')
     if not HISTORY_JSON.exists() and REPLY_JSON.exists():
         try:
-            save_reply_event(json.loads(REPLY_JSON.read_text()))
+            save_reply_event(json.loads(REPLY_JSON.read_text()),origin='legacy_import')
         except (OSError,ValueError) as exc:
             log('could not import last Muse reply: '+str(exc))
     threading.Thread(target=listen_touch,daemon=True).start()
