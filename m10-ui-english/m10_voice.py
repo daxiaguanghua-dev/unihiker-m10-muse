@@ -27,7 +27,7 @@ def main():
         request('/run/muse-m10/hardware.sock', {'op': 'led.set', 'on': False}, 5)
         from m10_agent import show_screen, WORK_TITLE, MODE_FILE
         if Path(MODE_FILE).read_text().strip() == 'work':
-            show_screen(WORK_TITLE, 'Recording finished\nSending to Muse...\n\nReply will appear here')
+            show_screen(WORK_TITLE, 'Recording finished\nSending to Muse...\n\nReply will appear here', 'sending')
         reply = request('/run/musegadget/musegadget.sock',
                         {'voice_wav_base64': capture['payload']['wav_base64'], 'reply_on_display': True}, 90)
         # The ack confirms upload, not transcription or reply completion.

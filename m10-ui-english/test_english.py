@@ -22,6 +22,14 @@ class EnglishVariantTests(unittest.TestCase):
         data = {'source': 'Muse device tool', 'text': 'Recording is complete. Here is the result.'}
         self.assertEqual(screen_state(data, 'work'), 'message')
 
+    def test_recording_finished_is_sending_not_another_countdown(self):
+        data = {'source': 'm10_agent', 'text': 'Recording finished\nSending to Muse...'}
+        self.assertEqual(screen_state(data, 'work'), 'sending')
+
+    def test_active_recording_still_has_one_countdown(self):
+        data = {'source': 'm10_agent', 'text': 'Recording for 5 seconds\nSpeak to the board'}
+        self.assertEqual(screen_state(data, 'work'), 'recording')
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -103,10 +103,10 @@ def screen_state(data, mode):
     if source == 'm10_agent':
         if 'Voice send failed' in text:
             return 'failed'
-        if 'Recording' in text:
-            return 'recording'
         if 'Recording finished' in text or 'Sending to' in text:
             return 'sending'
+        if 'Recording' in text:
+            return 'recording'
         if 'Voice sent' in text:
             return 'sent'
         if 'Returning to dashboard' in text:
