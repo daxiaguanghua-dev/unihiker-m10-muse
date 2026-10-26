@@ -603,4 +603,12 @@ class MuseScreen:
 
 
 if __name__ == '__main__':
-    MuseScreen().run()
+    lock_path=Path('/run/muse-m10/display-ui.lock')
+    lock_path.parent.mkdir(parents=True,exist_ok=True)
+    with lock_path.open('w') as instance_lock:
+        try:
+            fcntl.flock(instance_lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
+        except BlockingIOError:
+            print('Muse UI already running',flush=True)
+        else:
+            MuseScreen().run()

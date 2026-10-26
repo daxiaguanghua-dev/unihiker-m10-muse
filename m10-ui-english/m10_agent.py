@@ -141,6 +141,14 @@ def select_action(action):
     if action not in ALLOWED_ACTIONS:
         raise ValueError('unsupported touch action')
     if action=='work':
+        try:
+            mode=Path(MODE_FILE).read_text().strip()
+            current=json.loads(DISPLAY_JSON.read_text())
+        except (OSError,ValueError):
+            mode,current='',{}
+        if mode=='work' and current.get('source')=='Muse device tool' and current.get('text'):
+            log('duplicate work action ignored while showing Muse reply')
+            return
         set_mode('work')
         # Entering Work Mode starts with its instructions. A new display.show
         # call from Muse can replace this screen when an actual reply arrives.
