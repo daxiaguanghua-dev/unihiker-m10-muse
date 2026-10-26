@@ -18,6 +18,7 @@ HEARTBEAT_FILE = '/tmp/m10_agent_heartbeat'
 LOG_FILE = '/tmp/m10_agent.log'
 DIRECTORY = Path.home() / '.local/share/muse-m10'
 DISPLAY_JSON = DIRECTORY / 'display.json'
+REPLY_JSON = DIRECTORY / 'last_reply.json'
 AGENT_SOCKET = str(DIRECTORY / 'agent.sock')
 WORK_TITLE = 'Muse Work Mode'
 WORK_TEXT = 'Tap Record to capture 5 seconds\nMuse replies appear here\n\nA: previous · B: next'
@@ -71,6 +72,38 @@ def can_show_voice_result(started):
         return not (current.get('source')=='Muse device tool' and current.get('updated_at',0)>=started)
     except (OSError,ValueError,TypeError):
         return True
+
+
+def saved_reply_stamp():
+    try:
+        info=REPLY_JSON.stat()
+        return info.st_mtime_ns,info.st_size
+    except OSError:
+        return None
+
+
+def show_new_saved_reply():
+    try:
+        if Path(MODE_FILE).read_text().strip()!='work':
+            return True
+        reply=json.loads(REPLY_JSON.read_text())
+        title=reply.get('title') or 'Muse reply'
+        message=reply.get('text')
+        if not isinstance(title,str) or not isinstance(message,str) or not message.strip():
+            return False
+        try:
+            current=json.loads(DISPLAY_JSON.read_text())
+        except (OSError,ValueError):
+            current={}
+        if (current.get('source')=='Muse device tool'
+                and current.get('title')==title and current.get('text')==message):
+            return True
+        show_screen(title,message,'message',source='Muse device tool')
+        log('new Muse reply shown from last_reply.json')
+        return True
+    except (OSError,ValueError,TypeError) as exc:
+        log('saved Muse reply unavailable: '+str(exc))
+        return False
 
 
 def record_voice():
@@ -171,6 +204,7 @@ def main():
     log('m10_agent started: touch modes; A previous / B next')
     previous_a=previous_b=False
     last_beat=0
+    last_reply_stamp=saved_reply_stamp()
     while True:
         try:
             while True:
@@ -178,6 +212,10 @@ def main():
                     select_action(ACTIONS.get_nowait())
                 except queue.Empty:
                     break
+            reply_stamp=saved_reply_stamp()
+            if reply_stamp != last_reply_stamp:
+                if reply_stamp is None or show_new_saved_reply():
+                    last_reply_stamp=reply_stamp
             buttons=hw('buttons.read')
             a,b=bool(buttons.get('a_pressed')),bool(buttons.get('b_pressed'))
             if a and not previous_a:
