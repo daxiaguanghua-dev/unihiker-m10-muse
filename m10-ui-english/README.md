@@ -16,6 +16,8 @@ On the tested image, the display service runs against the existing X11 desktop. 
 
 The figures in [`figures/`](figures/) show the four dashboard pages and work states. The dashboard screenshots were captured from the running board. The work-state images use preview data to inspect layout; they do not establish that a new voice exchange completed during that capture. The voice-note request in `sdk/linux/src/musegadget/link_client.py` asks Muse to reply in English by default and show the actual reply on the M10, while allowing another language when explicitly requested. Muse generates the reply, so verify the language and screen delivery in a live conversation after deploying the updated SDK to the board.
 
+Entering Work Mode now shows the recording instructions first. It no longer replays `last_reply.json` on every mode switch; a fresh `display.show` call from Muse still replaces the instructions with the new reply. A previously saved Chinese message may remain on disk as history, but it is not the Work Mode landing screen.
+
 For a new board, first pair the [official Linux SDK](https://github.com/facebookincubator/muse-gadget-sdk/tree/main/linux) and verify `device.health`. Back up existing board files, integrate the SDK extensions and [hardware services](../m10-services/README.md), then deploy this UI and verify each function on-device. Do not transplant another board's identity, credentials, backup, or kernel module.
 
 Run the pure-Python UI model tests with `python -m unittest discover -s m10-ui-english -p 'test_english.py'` from the repository root. Full hardware and Muse tests require an actual paired M10.

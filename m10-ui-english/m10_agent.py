@@ -109,11 +109,9 @@ def select_action(action):
         raise ValueError('unsupported touch action')
     if action=='work':
         set_mode('work')
-        try:
-            reply=json.loads((DIRECTORY/'last_reply.json').read_text())
-            show_screen(reply.get('title','Muse reply'),reply['text'],'message',source='Muse device tool')
-        except (OSError,ValueError,KeyError):
-            show_screen(WORK_TITLE,WORK_TEXT,'ready')
+        # Entering Work Mode starts with its instructions. A new display.show
+        # call from Muse can replace this screen when an actual reply arrives.
+        show_screen(WORK_TITLE,WORK_TEXT,'ready')
     elif action=='dashboard':
         set_mode('dashboard')
         show_screen('M10 Dashboard','', 'dashboard')
