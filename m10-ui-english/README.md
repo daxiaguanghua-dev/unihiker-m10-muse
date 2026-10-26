@@ -8,6 +8,7 @@ This folder contains the English interface deployed to one cloned UNIHIKER M10 r
 | `muse_ui_model.py` | `/root/muse_ui_model.py` | Text pagination and status formatting |
 | `muse_connection.py` | `/root/muse_connection.py` | Live Muse connection status and retry diagnosis |
 | `m10_agent.py` | `/home/muse/m10_agent.py` | Buttons, display requests, and voice workflow |
+| `m10_history.py` | `/home/muse/m10_history.py` and `/root/m10_history.py` | Local text history shared by agent and display |
 | `m10_voice.py` | `/home/muse/m10_voice.py` | Record and submit a short voice note |
 
 It expects an active `musegadget` service with this repository's M10 SDK extensions, plus `muse-m10-hardware`, `muse-m10-agent`, and `muse-display-screen`. The UI communicates through local sockets and the display request file. The SDK token and paired identity must be configured on the board through the official pairing process; they are not supplied here.
@@ -16,7 +17,9 @@ On the tested image, the display service runs against the existing X11 desktop. 
 
 The figures in [`figures/`](figures/) show the four dashboard pages and work states. The dashboard screenshots were captured from the running board. The work-state images use preview data to inspect layout; they do not establish that a new voice exchange completed during that capture. The voice-note request in `sdk/linux/src/musegadget/link_client.py` asks Muse to reply in English by default and show the actual reply on the M10, while allowing another language when explicitly requested. Muse generates the reply, so verify the language and screen delivery in a live conversation after deploying the updated SDK to the board.
 
-Entering Work Mode shows the recording instructions first. It does not replay `last_reply.json` on every mode switch. A fresh `display.show` call from Muse replaces the instructions with the new reply; the agent also watches for a newly written `last_reply.json` and displays its title and text while Work Mode is active. This fallback covers Muse writing a reply file instead of calling `display.show`. Existing reply history is ignored until the file changes again.
+Entering Work Mode shows the recording instructions first. It does not replay `last_reply.json` as the live page on every mode switch. A fresh `display.show` call from Muse replaces the instructions with the new reply; the agent also watches for a newly written `last_reply.json` and displays its title and text while Work Mode is active. This fallback covers Muse writing a reply file instead of calling `display.show`.
+
+In Work Mode, A and B page from the current instruction or reply into earlier interactions; there is no separate History menu. The board keeps the 50 most recent voice-send timestamps and Muse reply texts in `/home/muse/.local/share/muse-m10/history.json`. It does not retain audio or claim to show a speech transcript. The log starts when this version is installed, with at most the previously saved last reply imported on first run.
 
 Once a Muse reply is on screen, a repeated Work Mode request leaves it visible. It stays until the user records again or switches to the dashboard. The touchscreen process uses a single-instance lock because the tested M10 image can launch it through both the board's desktop and the systemd service.
 

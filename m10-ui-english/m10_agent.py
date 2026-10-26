@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """M10 local agent: touch controls modes and recording; A/B only turn pages."""
 import fcntl
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -11,6 +12,8 @@ import tempfile
 import threading
 import time
 
+from m10_history import append_history
+
 SOCK = '/run/muse-m10/hardware.sock'
 DISPLAY_SOCKET = '/run/muse-m10/display.sock'
 MODE_FILE = '/tmp/m10_ui_mode'
@@ -19,6 +22,7 @@ LOG_FILE = '/tmp/m10_agent.log'
 DIRECTORY = Path.home() / '.local/share/muse-m10'
 DISPLAY_JSON = DIRECTORY / 'display.json'
 REPLY_JSON = DIRECTORY / 'last_reply.json'
+HISTORY_JSON = DIRECTORY / 'history.json'
 AGENT_SOCKET = str(DIRECTORY / 'agent.sock')
 WORK_TITLE = 'Muse Work Mode'
 WORK_TEXT = 'Tap Record to capture 5 seconds\nMuse replies appear here\n\nA: previous · B: next'
@@ -47,7 +51,7 @@ def hw(op,**params):
     return request(SOCK,{'op':op,**params},5)
 
 
-def show_screen(title,text,ui_state=None,source='m10_agent'):
+def show_screen(title,text,ui_state=None,source='m10_agent',origin=None):
     DIRECTORY.mkdir(parents=True,exist_ok=True,mode=0o700)
     fd,name=tempfile.mkstemp(prefix='.display-',dir=DIRECTORY)
     try:
@@ -55,6 +59,8 @@ def show_screen(title,text,ui_state=None,source='m10_agent'):
             data={'title':title,'text':text,'updated_at':time.time(),'source':source}
             if ui_state:
                 data['ui_state']=ui_state
+            if origin:
+                data['origin']=origin
             json.dump(data,stream,ensure_ascii=False)
         os.replace(name,DISPLAY_JSON)
     finally:
@@ -82,15 +88,30 @@ def saved_reply_stamp():
         return None
 
 
+def save_reply_event(reply):
+    title=reply.get('title') or 'Muse reply'
+    message=reply.get('text')
+    if not isinstance(title,str) or not isinstance(message,str) or not message.strip():
+        return False
+    try:
+        timestamp=float(reply.get('updated_at') or REPLY_JSON.stat().st_mtime)
+        event_id='reply-'+hashlib.sha256(
+            (str(timestamp)+'\0'+title+'\0'+message).encode('utf-8')).hexdigest()
+        append_history(HISTORY_JSON,'reply',title,message,timestamp,event_id)
+    except (OSError,ValueError,TypeError) as exc:
+        log('could not save Muse reply history: '+str(exc))
+    return True
+
+
 def show_new_saved_reply():
     try:
-        if Path(MODE_FILE).read_text().strip()!='work':
-            return True
         reply=json.loads(REPLY_JSON.read_text())
         title=reply.get('title') or 'Muse reply'
         message=reply.get('text')
-        if not isinstance(title,str) or not isinstance(message,str) or not message.strip():
+        if not save_reply_event(reply):
             return False
+        if Path(MODE_FILE).read_text().strip()!='work':
+            return True
         try:
             current=json.loads(DISPLAY_JSON.read_text())
         except (OSError,ValueError):
@@ -98,7 +119,7 @@ def show_new_saved_reply():
         if (current.get('source')=='Muse device tool'
                 and current.get('title')==title and current.get('text')==message):
             return True
-        show_screen(title,message,'message',source='Muse device tool')
+        show_screen(title,message,'message',source='Muse device tool',origin='saved_reply')
         log('new Muse reply shown from last_reply.json')
         return True
     except (OSError,ValueError,TypeError) as exc:
@@ -119,6 +140,12 @@ def record_voice():
                                    capture_output=True,text=True,timeout=100)
             successful=result.returncode==0
             log('voice note accepted by Muse' if successful else 'voice note failed: '+result.stdout[-300:])
+            if successful:
+                try:
+                    append_history(HISTORY_JSON,'voice','Voice note',
+                        'Five-second voice note sent to Muse. Audio and transcript are not stored.',started)
+                except (OSError,ValueError) as exc:
+                    log('could not save voice history: '+str(exc))
             if Path(MODE_FILE).read_text().strip()=='work' and can_show_voice_result(started):
                 show_screen(WORK_TITLE,
                     'Voice sent\nWaiting for Muse reply' if successful else 'Voice send failed\nCheck connection, then retry',
@@ -208,6 +235,11 @@ def main():
         data={}
     if data.get('source')=='m10_agent' or not data.get('text'):
         select_action('work' if mode=='work' else 'dashboard')
+    if not HISTORY_JSON.exists() and REPLY_JSON.exists():
+        try:
+            save_reply_event(json.loads(REPLY_JSON.read_text()))
+        except (OSError,ValueError) as exc:
+            log('could not import last Muse reply: '+str(exc))
     threading.Thread(target=listen_touch,daemon=True).start()
     log('m10_agent started: touch modes; A previous / B next')
     previous_a=previous_b=False

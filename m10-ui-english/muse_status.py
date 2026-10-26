@@ -18,6 +18,7 @@ from tkinter import font as tkfont
 
 from muse_ui_model import clean_text, paginate, shorten, screen_state, memory_available, chip_temperature
 from muse_connection import diagnose, sdk_status
+from m10_history import load_history
 
 os.environ.setdefault('DISPLAY', ':0')
 os.environ.setdefault('XAUTHORITY', '/root/.Xauthority')
@@ -25,6 +26,7 @@ DISPLAY_FILE = Path('/home/muse/.local/share/muse-m10/display.json')
 MODE_FILE = Path('/tmp/m10_ui_mode')
 UI_SOCKET = '/run/muse-m10/display.sock'
 AGENT_SOCKET = '/home/muse/.local/share/muse-m10/agent.sock'
+HISTORY_FILE = Path('/home/muse/.local/share/muse-m10/history.json')
 DASHBOARD_PAGES = 4
 COLORS = dict(bg='#f5f4ef', card='#fbfcf7', ink='#202d29', muted='#77837b',
               line='#e1e5dc', green='#23674d', soft='#eaf0e5', orange='#c46540')
@@ -137,6 +139,9 @@ class MuseScreen:
         self.last_value = None
         self.page = 0
         self.pages = [['']]
+        self.history_cards = []
+        self.history_stamp = None
+        self.history_current = None
         self.status = {'connection': 'checking', 'temperature': None, 'memory': None}
         self.inbox = queue.Queue()
         self.last_tick = -1
@@ -209,7 +214,7 @@ class MuseScreen:
         if self.connection_panel:
             return
         state = screen_state(self.data, self.mode)
-        total = len(self.pages) if state == 'message' else DASHBOARD_PAGES if state == 'dashboard' else 1
+        total = self.work_page_count(state) if self.mode == 'work' else DASHBOARD_PAGES
         target = max(0, min(total-1, self.page + direction))
         if target != self.page:
             self.page = target
@@ -220,6 +225,37 @@ class MuseScreen:
         self.show()
         self.draw()
         print(f'Page {direction:+}: {state} {self.page+1}/{total}', flush=True)
+
+    def work_page_count(self,state):
+        current_pages=len(self.pages) if state == 'message' else 1
+        return current_pages+len(self.history_cards) if state not in ('recording','sending') else 1
+
+    def refresh_history(self):
+        try:
+            stamp=HISTORY_FILE.stat().st_mtime_ns
+        except OSError:
+            stamp=None
+        current=(self.data.get('source'),self.data.get('title'),self.data.get('text'))
+        if stamp == self.history_stamp and current == self.history_current:
+            return False
+        self.history_stamp,self.history_current=stamp,current
+        items=sorted(load_history(HISTORY_FILE),key=lambda item:item['timestamp'],reverse=True)
+        # The newest reply is already the live first page; show it only once.
+        if current[0]=='Muse device tool' and current[2]:
+            for index,item in enumerate(items):
+                if item['kind']=='reply' and item['title']==current[1] and item['text']==current[2]:
+                    items.pop(index)
+                    break
+        cards=[]
+        for item in items:
+            pages=paginate(clean_text(item['text']),self.font(13).measure,184,4)
+            for number,lines in enumerate(pages,1):
+                cards.append((item,number,len(pages),lines))
+        self.history_cards=cards
+        if self.mode == 'work':
+            state=screen_state(self.data,self.mode)
+            self.page=min(self.page,self.work_page_count(state)-1)
+        return True
 
     def agent_action(self, action):
         if self.data.get('preview'):
@@ -327,7 +363,7 @@ class MuseScreen:
                     self.page = 0
                     self.notice = ''
                     self.pages = paginate(clean_text(data.get('text', '')), self.font(13).measure, 184, 4)
-                if data.get('source') == 'Muse device tool' and data.get('text') and 'Dashboard' not in str(data.get('title','')) and not data.get('preview'):
+                if data.get('source') == 'Muse device tool' and data.get('text') and 'Dashboard' not in str(data.get('title','')) and not data.get('preview') and data.get('origin') != 'saved_reply':
                     target=DISPLAY_FILE.with_name('last_reply.json')
                     temporary=target.with_suffix('.tmp')
                     temporary.write_text(json.dumps(data,ensure_ascii=False))
@@ -340,6 +376,8 @@ class MuseScreen:
                 print('Muse UI rendered: ' + screen_state(data, mode), flush=True)
         except (OSError, ValueError, TypeError):
             pass
+        if self.refresh_history():
+            redraw=True
         try:
             while True:
                 kind, value = self.inbox.get_nowait()
@@ -411,11 +449,14 @@ class MuseScreen:
         state = screen_state(self.data, self.mode)
         if state == 'dashboard':
             self.draw_dashboard()
+        elif self.mode == 'work' and state not in ('recording','sending') and self.page >= (len(self.pages) if state == 'message' else 1):
+            index=self.page-(len(self.pages) if state == 'message' else 1)
+            self.draw_history_card(self.history_cards[index])
         elif state == 'message':
             self.draw_message()
         else:
             self.draw_voice(state)
-        total = len(self.pages) if state == 'message' else DASHBOARD_PAGES if state == 'dashboard' else 1
+        total = self.work_page_count(state) if self.mode == 'work' else DASHBOARD_PAGES
         hint = self.notice or f'A Prev   {self.page+1}/{total}   B Next'
         self.text(120,259,hint,10,'green' if self.notice else 'muted',anchor='center')
         busy = state in ('recording','sending')
@@ -431,7 +472,8 @@ class MuseScreen:
         try:
             path = Path('/run/muse-m10/view.json')
             temporary = path.with_suffix('.tmp')
-            temporary.write_text(json.dumps({'state':state,'page':self.page+1,'pages':total,
+            visible_state='history' if self.mode=='work' and state not in ('recording','sending') and self.page >= (len(self.pages) if state=='message' else 1) else state
+            temporary.write_text(json.dumps({'state':visible_state,'page':self.page+1,'pages':total,
                                             'mode':self.mode,'notice':self.notice,
                                             'updated_at':self.data.get('updated_at')}))
             os.replace(temporary, path)
@@ -563,9 +605,24 @@ class MuseScreen:
         for index,line in enumerate(self.pages[self.page]):
             self.text(27,129+index*20,line,13,'#48584e')
         self.text(28,220,f'{self.page+1:02} / {len(self.pages):02}',10,'muted')
-        if len(self.pages) > 1:
+        if self.work_page_count('message') > 1:
             self.touch('previous',88,215,60,23,'Prev',lambda:self.flip(-1))
             self.touch('next',156,215,60,23,'Next',lambda:self.flip(1))
+
+    def draw_history_card(self,card):
+        entry,part,total,lines=card
+        self.rect(12,62,216,184,16)
+        label='VOICE NOTE' if entry['kind']=='voice' else 'MUSE REPLY'
+        self.text(27,76,label+' · HISTORY',10,'green')
+        stamp=datetime.datetime.fromtimestamp(entry['timestamp']).strftime('%m/%d %H:%M')
+        self.text(213,76,stamp,9,'muted',anchor='ne')
+        heading=clean_text(entry['title']).replace('\n',' ')
+        self.text(27,98,shorten(heading,self.font(18,True).measure,185),18,bold=True)
+        for index,line in enumerate(lines):
+            self.text(27,129+index*20,line,13,'#48584e')
+        self.text(28,220,f'{part:02} / {total:02}',10,'muted')
+        self.touch('previous',88,215,60,23,'Prev',lambda:self.flip(-1))
+        self.touch('next',156,215,60,23,'Next',lambda:self.flip(1))
 
     def draw_voice(self,state):
         recording = state == 'recording'
