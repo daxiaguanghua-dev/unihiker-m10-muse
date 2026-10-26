@@ -16,7 +16,7 @@ import time
 import tkinter as tk
 from tkinter import font as tkfont
 
-from muse_ui_model import clean_text, paginate, shorten, screen_state, memory_available, chip_temperature
+from muse_ui_model import clean_text, paginate, paginate_message, shorten, screen_state, memory_available, chip_temperature
 from muse_connection import diagnose, sdk_status
 from m10_history import load_history
 
@@ -28,6 +28,7 @@ UI_SOCKET = '/run/muse-m10/display.sock'
 AGENT_SOCKET = '/home/muse/.local/share/muse-m10/agent.sock'
 HISTORY_FILE = Path('/home/muse/.local/share/muse-m10/history.json')
 DASHBOARD_PAGES = 4
+MESSAGE_ROWS = 6
 COLORS = dict(bg='#f5f4ef', card='#fbfcf7', ink='#202d29', muted='#77837b',
               line='#e1e5dc', green='#23674d', soft='#eaf0e5', orange='#c46540')
 
@@ -248,7 +249,9 @@ class MuseScreen:
                     break
         cards=[]
         for item in items:
-            pages=paginate(clean_text(item['text']),self.font(13).measure,184,4)
+            content = ('5-second recording sent.\nNo transcript saved.'
+                       if item['kind'] == 'voice' else clean_text(item['text']))
+            pages=paginate_message(content,self.font(12).measure,184,MESSAGE_ROWS)
             for number,lines in enumerate(pages,1):
                 cards.append((item,number,len(pages),lines))
         self.history_cards=cards
@@ -362,7 +365,8 @@ class MuseScreen:
                 if not same_content and not same_dashboard:
                     self.page = 0
                     self.notice = ''
-                    self.pages = paginate(clean_text(data.get('text', '')), self.font(13).measure, 184, 4)
+                    self.pages = paginate_message(clean_text(data.get('text', '')),
+                                                  self.font(12).measure, 184, MESSAGE_ROWS)
                 if data.get('source') == 'Muse device tool' and data.get('text') and 'Dashboard' not in str(data.get('title','')) and not data.get('preview') and data.get('origin') != 'saved_reply':
                     target=DISPLAY_FILE.with_name('last_reply.json')
                     temporary=target.with_suffix('.tmp')
@@ -603,26 +607,25 @@ class MuseScreen:
         heading = clean_text(self.data.get('title','Muse reply')).replace('\n',' ') or 'Muse reply'
         self.text(27,98,shorten(heading,self.font(18,True).measure,185),18,bold=True)
         for index,line in enumerate(self.pages[self.page]):
-            self.text(27,129+index*20,line,13,'#48584e')
-        self.text(28,220,f'{self.page+1:02} / {len(self.pages):02}',10,'muted')
-        if self.work_page_count('message') > 1:
-            self.touch('previous',88,215,60,23,'Prev',lambda:self.flip(-1))
-            self.touch('next',156,215,60,23,'Next',lambda:self.flip(1))
+            self.text(27,125+index*17,line,12,'#48584e')
+        if len(self.pages) > 1:
+            self.text(27,230,'CONTINUES' if self.page < len(self.pages)-1 else 'END OF REPLY',
+                      9,'muted')
 
     def draw_history_card(self,card):
         entry,part,total,lines=card
         self.rect(12,62,216,184,16)
-        label='VOICE NOTE' if entry['kind']=='voice' else 'MUSE REPLY'
+        label='VOICE' if entry['kind']=='voice' else 'MUSE REPLY'
         self.text(27,76,label+' · HISTORY',10,'green')
         stamp=datetime.datetime.fromtimestamp(entry['timestamp']).strftime('%m/%d %H:%M')
         self.text(213,76,stamp,9,'muted',anchor='ne')
-        heading=clean_text(entry['title']).replace('\n',' ')
+        heading=('Sent to Muse' if entry['kind']=='voice' else
+                 clean_text(entry['title']).replace('\n',' '))
         self.text(27,98,shorten(heading,self.font(18,True).measure,185),18,bold=True)
         for index,line in enumerate(lines):
-            self.text(27,129+index*20,line,13,'#48584e')
-        self.text(28,220,f'{part:02} / {total:02}',10,'muted')
-        self.touch('previous',88,215,60,23,'Prev',lambda:self.flip(-1))
-        self.touch('next',156,215,60,23,'Next',lambda:self.flip(1))
+            self.text(27,125+index*17,line,12,'#48584e')
+        if total > 1:
+            self.text(27,230,'CONTINUES' if part < total else 'END OF REPLY',9,'muted')
 
     def draw_voice(self,state):
         recording = state == 'recording'

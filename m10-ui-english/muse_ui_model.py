@@ -10,6 +10,7 @@ def clean_text(text):
             0x1F000 <= ord(c) <= 0x1FAFF or 0x2600 <= ord(c) <= 0x27BF or
             unicodedata.category(c) == 'Cs' or c in ('\ufe0f', '\u200d')))
         line = line.strip()
+        line = re.sub(r'(?<=\d)[ \u3000]+dBFS\b', 'dBFS', line)
         if line and re.fullmatch(r'[━─═_\-=\s]{3,}', line):
             continue
         lines.append(line)
@@ -76,6 +77,29 @@ def paginate(text, measure, width, rows=4):
             if block:
                 pages.append(current)
                 current = []
+    if current or not pages:
+        pages.append(current or [''])
+    return pages
+
+
+def paginate_message(text, measure, width, rows=6):
+    """Keep each explicit reply line together where it fits on one page."""
+    pages = []
+    current = []
+    for source_line in text.split('\n'):
+        if not source_line:
+            if current and current[-1] != '' and len(current) < rows - 1:
+                current.append('')
+            continue
+        block = wrap_text(source_line, measure, width)
+        if current and len(current) + len(block) > rows:
+            pages.append(current)
+            current = []
+        while len(block) > rows:
+            take = rows - 1 if len(block) == rows + 1 else rows
+            pages.append(block[:take])
+            block = block[take:]
+        current.extend(block)
     if current or not pages:
         pages.append(current or [''])
     return pages

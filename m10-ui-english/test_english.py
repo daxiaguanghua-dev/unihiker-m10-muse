@@ -2,7 +2,7 @@
 import unittest
 
 from muse_connection import classify
-from muse_ui_model import screen_state
+from muse_ui_model import clean_text, paginate_message, screen_state
 
 
 class EnglishVariantTests(unittest.TestCase):
@@ -29,6 +29,14 @@ class EnglishVariantTests(unittest.TestCase):
     def test_active_recording_still_has_one_countdown(self):
         data = {'source': 'm10_agent', 'text': 'Recording for 5 seconds\nSpeak to the board'}
         self.assertEqual(screen_state(data, 'work'), 'recording')
+
+    def test_reply_paging_keeps_a_short_status_line_together(self):
+        lines = ['a' * 8] * 5 + ['b' * 16]
+        pages = paginate_message('\n'.join(lines), len, 10, 6)
+        self.assertEqual(pages, [['a' * 8] * 5, ['b' * 10, 'b' * 6]])
+
+    def test_level_unit_does_not_wrap_away_from_its_number(self):
+        self.assertIn('-39.8dBFS', clean_text('声级 -39.8 dBFS'))
 
 
 if __name__ == '__main__':

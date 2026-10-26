@@ -21,6 +21,8 @@ Entering Work Mode shows the recording instructions first. It does not replay `l
 
 In Work Mode, A and B page from the current instruction or reply into earlier interactions; there is no separate History menu. The board keeps the 50 most recent voice-send timestamps and Muse reply texts in `/home/muse/.local/share/muse-m10/history.json`. It does not retain audio or claim to show a speech transcript. The log starts when this version is installed, with at most the previously saved last reply imported on first run.
 
+The on-screen reply card uses A/B navigation only. It groups an explicit line of Muse text on one page when it fits, and marks multi-page replies with a continuation label. The saved reply text remains intact; the small display removes unsupported symbols and normalizes spacing while rendering.
+
 Once a Muse reply is on screen, a repeated Work Mode request leaves it visible. It stays until the user records again or switches to the dashboard. The touchscreen process uses a single-instance lock because the tested M10 image can launch it through both the board's desktop and the systemd service.
 
 For a new board, first pair the [official Linux SDK](https://github.com/facebookincubator/muse-gadget-sdk/tree/main/linux) and verify `device.health`. Back up existing board files, integrate the SDK extensions and [hardware services](../m10-services/README.md), then deploy this UI and verify each function on-device. Do not transplant another board's identity, credentials, backup, or kernel module.
