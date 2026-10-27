@@ -40,7 +40,7 @@ Now that Muse can ask the board for its status, let the M10 show that informatio
 
 ![Four pages of the M10 dashboard](../m10-ui-english/figures/dashboard-overview.png)
 
-These four dashboard pages come from a running M10. In the example, Muse says “Online” while Wi-Fi says “Disconnected” because the board was reaching Muse through another network connection. The two labels describe different connections.
+These four dashboard pages come from a running M10. The connection values reflect the moment each image was captured; check the status on your own board after pairing.
 
 ![Work Mode screens for the M10](../m10-ui-english/figures/work-overview.png)
 
